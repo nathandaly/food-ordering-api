@@ -1,0 +1,53 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: "3.1"
+services:
+  redis:
+    build:
+      context: phpdocker/php-fpm
+    container_name: fo-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  webserver:
+    image: nginx:alpine
+    container_name: fo-webserver
+    restart: unless-stopped
+    working_dir: /application
+    volumes:
+        - .:/application
+        - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+     - ${FO_PORT}:80§
+    networks:
+      - mallcomm-network
+
+  php-fpm:
+    build:
+      context: phpdocker/php-fpm
+      args:
+        - WITH_XDEBUG=false
+    env_file:
+      - phpdocker/php-fpm/.env
+    container_name: fo-php-fpm
+    depends_on:
+      - redis
+    restart: unless-stopped
+    working_dir: /application
+    volumes:
+      - .:/application
+      - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+    networks:
+      - mallcomm-network
+
+networks:
+  mallcomm-network:
+    external: true
+
+# Volumes
+volumes:
+  redis-data:
