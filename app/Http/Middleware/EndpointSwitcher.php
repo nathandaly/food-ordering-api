@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\FoodOrdering\Adapters\FoodSoftOrderingAdapter;
+use App\FoodOrdering\Contracts\FoodOrderingInterface;
 use App\Repositories\RestaurantRepository;
 use Closure;
 use GuzzleHttp\Client as HttpClient;
@@ -38,13 +40,17 @@ class EndpointSwitcher extends BaseApiMiddleware
         $restaurantId = $request->route('restaurant');
 
         if ($restaurantId && $restaurantUrl = $this->restaurantRepository->queryIntegrationInternalUrl($restaurantId)) {
+            $centreConfig = $request->centre->config;
             $httpClient = new HttpClient([
-                'base_uri' => $restaurantUrl,
-                'connect_timeout' => 5, // TODO: Get this from centre config.
+                'base_uri' => env('ORDERING_PROVIDER_BASE_URI', $restaurantUrl),
+                'connect_timeout' => env(
+                    'ORDERING_PROVIDER_BASE_TIMEOUT',
+                    ($centreConfig['FoodSoft']['timeout'] ?? 5)
+                ),
             ]);
 
-            app()->extend('FoodSoft\API', static function ($service, $app) use ($httpClient) {
-                return new $service($httpClient);
+            app()->extend('ProviderHTTPClient', static function () use ($httpClient) {
+                return $httpClient;
             });
         }
 

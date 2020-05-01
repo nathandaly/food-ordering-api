@@ -44,7 +44,7 @@ class RestaurantTransformer
 
         $restaurant = [
             'id' => $data['id'],
-            'name' => $data['name'],
+            'name' => $data['name'] ?? null,
             'address' => $this->transformAddress($data),
         ];
 
@@ -156,7 +156,7 @@ class RestaurantTransformer
     {
         return [
             'id' => (int) $groups['POSPRODGRPID'],
-            'name' => $groups['Name'],
+            'name' => $groups['Name'] ?? null,
             'description' => $groups['Description'] ?? '',
         ];
     }
@@ -177,9 +177,9 @@ class RestaurantTransformer
                     foreach ($dimensions->get($dimensionKey)['values'] as $dimValue) {
                         $dimensionGroup[$dimensionKey]['values'][] = [
                             'id' => (int) $dimValue['Id'],
-                            'name' => $dimValue['Name'],
-                            'default' => (int) $dimValue['flgDefault'],
-                            'complexTypeId' => (int) $dimValue['POSPIZZAWYMID'],
+                            'name' => $dimValue['Name'] ?? null,
+                            'default' => (int) ($dimValue['flgDefault'] ?? 0),
+                            'complexTypeId' => (int) ($dimValue['POSPIZZAWYMID'] ?? 0),
                         ];
                     }
                 }
@@ -200,11 +200,11 @@ class RestaurantTransformer
 
         $addonGroups->map(static function($addonGroup) use (&$groups, $transformer) {
             $transformedGroup = [
-                'choice' => (int) ($addonGroup['flgWybor'] ?? 0),
-                'name' => $addonGroup['Nazwa'],
-                'mandatory' => (int) ($addonGroup['flgObowiazkowy'] ?? 0),
-                'maxQuantity' => (int) ($addonGroup['MaxIlosc'] ?? 0),
-                'minQuantity' => (int) ($addonGroup['MinIlosc'] ?? 0),
+                'choice' => (int) ($addonGroup['flgChoose'] ?? 0),
+                'name' => $addonGroup['Name'] ?? null,
+                'mandatory' => (int) ($addonGroup['flgMandatory'] ?? 0),
+                'maxQuantity' => (int) ($addonGroup['MaxQuantinty'] ?? 0),
+                'minQuantity' => (int) ($addonGroup['MinQuantinty'] ?? 0),
             ];
 
             $products = [];

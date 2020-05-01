@@ -57,7 +57,7 @@ class FoodSoft
      */
     public function __construct(HttpClient $httpClient)
     {
-        $this->httpClient = $httpClient;
+        $this->httpClient = resolve('ProviderHTTPClient');
         $this->awsObject = resolve(AWSObjectInterface::class);
     }
 
@@ -110,27 +110,27 @@ class FoodSoft
         $awsObject = $this->awsObject->setCentre(request('centre'));
         $allItems = $itemsCollection->toArray();
 
-        $itemsCollection->whereNotNull('Ikonka')
+        $itemsCollection->whereNotNull('Icon')
             ->map(static function($itemWithImage, $key) use (&$allItems, $awsObject) {
                 /** @var AWSObjectInterface $awsObject */
                 if (
-                    !$awsObject->objectExists($itemWithImage['Ikonka'])
-                    && $url = $awsObject->saveObject($itemWithImage['Ikonka'])
+                    !$awsObject->objectExists($itemWithImage['Icon'])
+                    && $url = $awsObject->saveObject($itemWithImage['Icon'])
                 ) {
-                    $itemWithImage['Ikonka'] = $url;
+                    $itemWithImage['Icon'] = $url;
                 }
 
                 $allItems[$key] = $itemWithImage;
             });
 
-        $itemsCollection->whereNotNull('Zdjecie')
+        $itemsCollection->whereNotNull('Picture')
             ->map(static function($itemWithImage, $key) use (&$allItems, $awsObject) {
                 /** @var AWSObjectInterface $awsObject */
                 if (
-                    !$awsObject->objectExists($itemWithImage['Zdjecie'])
-                    && $url = $awsObject->saveObject($itemWithImage['Zdjecie'])
+                    !$awsObject->objectExists($itemWithImage['Picture'])
+                    && $url = $awsObject->saveObject($itemWithImage['Picture'])
                 ) {
-                    $itemWithImage['Zdjecie'] = $url;
+                    $itemWithImage['Picture'] = $url;
                 }
 
                 $allItems[$key] = $itemWithImage;
@@ -262,10 +262,12 @@ class FoodSoft
      */
     private function makeRequest(string $endpoint): ResponseInterface
     {
-        $response = false;
+        $response = null;
 
         try {
-            $response = $this->httpClient->request('GET', $endpoint);
+            /** @var HttpClient $httpClient */
+            $httpClient = resolve('ProviderHTTPClient');
+            $response = $httpClient->request('GET', $endpoint);
         } catch (ConnectException $e) {
             $errorNumber = !empty($e->getHandlerContext()['errno']) ?: 0;
 

@@ -175,7 +175,7 @@ class FoodSoftOrderingAdapter implements FoodOrderingInterface
         foreach ($products as $index => $product) {
 
             $products[$index]['Dimensions'] = Collection::make([]);
-            $products[$index]['Addons'] = Collection::make([]);w11a
+            $products[$index]['Addons'] = Collection::make([]);
 
             $dimensionType = $this->getComplexTypesById((int) $product['POSPIZZAWYMID']);
             $dimensionType['Dimension1'] = $dimensionType['Dimension2'] = Collection::make([]);
